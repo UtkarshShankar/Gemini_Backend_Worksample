@@ -1,0 +1,15 @@
+{
+  "name": "gemini_backend_worksample",
+  "version": "1.0.0",
+  "description": "Gemini Backend Worksample with auth, caching , payment and AI integrated",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "start": "node index.js"
+  },
+  "author": "Utkarsh Shankar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
