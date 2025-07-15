@@ -19,16 +19,15 @@ const connectDatabase = async () => {
     client.connect(async function (err) {
         if (err)
             throw err;
-        client.query("SELECT VERSION()", [], function (err, result) {
-            if (err)
-                throw err;
-
-            console.log(result.rows[0].version);
-
-
-        });
         const date = await client.query("SELECT NOW()");
-        console.log(date.rows[0].now);
+        const tableExist = await client.query(`SELECT to_regclass('users') AS table_exists;`)
+        console.log(tableExist);
+
+        if (!tableExist.rows[0].table_exists) {
+            console.log('user table does not exist: '+tableExist.rows[0].table_exists);
+            const date = await client.query(fs.readFileSync('./src/database/queries.sql').toString());
+            console.log(date);
+        }
         client.end(function (err) {
             if (err)
                 throw err;

@@ -1,10 +1,8 @@
 const express  = require('express');
 
 const router  = express.Router()
-router.get("/", async (req, res, next) => {
+router.post("/signup", async (req, res, next) => {
   try {
-
-    // throw new Error('err');
     res.status(200).json({
       status: "success",
       data: '{ user }',
