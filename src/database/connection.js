@@ -1,7 +1,10 @@
 const fs = require('fs');
 const pg = require('pg');
 const url = require('url');
-// require("dotenv").config()
+//create a pool of connection per session
+// utilize the connection 
+// release it back to pool
+let pool;
 const config = {
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
@@ -15,24 +18,30 @@ const config = {
 };
 const connectDatabase = async () => {
 
-    const client = new pg.Client(config);
-    client.connect(async function (err) {
-        if (err)
-            throw err;
+    pool = new pg.Pool(config);
+
+    const client = await pool.connect();
+
+    try {
         const date = await client.query("SELECT NOW()");
-        const tableExist = await client.query(`SELECT to_regclass('users') AS table_exists;`)
-        console.log(tableExist);
+        console.log('Current time:', date.rows[0]);
+
+        const tableExist = await client.query(`SELECT to_regclass('public.users') AS table_exists;`);
+        console.log('Table existence check:', tableExist.rows[0]);
 
         if (!tableExist.rows[0].table_exists) {
-            console.log('user table does not exist: '+tableExist.rows[0].table_exists);
-            const date = await client.query(fs.readFileSync('./src/database/queries.sql').toString());
-            console.log(date);
+            console.log('users table does not exist. Creating...');
+            const createTableQuery = fs.readFileSync('./src/database/queries.sql').toString();
+            const result = await client.query(createTableQuery);
+            console.log('users table created:', result);
         }
-        client.end(function (err) {
-            if (err)
-                throw err;
-        });
-    });
+    } catch (error) {
+        console.error("Database connection error:", error)
+        throw error
+    } finally {
+        client.release();
+    }
+
 }
 const getPool = () => {
     if (!pool) {
