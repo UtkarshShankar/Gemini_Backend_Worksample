@@ -26,14 +26,23 @@ const connectDatabase = async () => {
         const date = await client.query("SELECT NOW()");
         console.log('Current time:', date.rows[0]);
 
-        const tableExist = await client.query(`SELECT to_regclass('public.users') AS table_exists;`);
-        console.log('Table existence check:', tableExist.rows[0]);
+        const userTableExist = await client.query(`SELECT to_regclass('public.users') AS userTableExist;`);
+        console.log('userTableExist value', userTableExist.rows[0]);
 
-        if (!tableExist.rows[0].table_exists) {
+        if (userTableExist.rows[0].length === 0) {
             console.log('users table does not exist. Creating...');
-            const createTableQuery = fs.readFileSync('./src/database/queries.sql').toString();
+            const createTableQuery = fs.readFileSync('./src/database/createUserTableQuery.sql').toString();
             const result = await client.query(createTableQuery);
             console.log('users table created:', result);
+        }
+        const otpTableExist = await client.query(`SELECT to_regclass('public.otps') AS otpTableExist;`);
+        console.log('otpTableExist value', otpTableExist.rows[0]);
+
+        if (otpTableExist.rows[0].length) {
+            console.log('otps table does not exist. Creating...');
+            const createTableQuery = fs.readFileSync('./src/database/createOTPTableQuery.sql').toString();
+            const result = await client.query(createTableQuery);
+            console.log('otp table created:', result);
         }
     } catch (error) {
         console.error("Database connection error:", error)
